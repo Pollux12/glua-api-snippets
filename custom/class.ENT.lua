@@ -1,2 +1,0 @@
----@class ENT : ENTITY
-ENT = {}

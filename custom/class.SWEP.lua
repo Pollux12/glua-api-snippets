@@ -1,2 +1,0 @@
----@class SWEP : WEAPON
-SWEP = {}
