@@ -5,7 +5,8 @@
 ---[View wiki](https://wiki.facepunch.com/gmod/Vehicle)
 ---@class Vehicle : Entity
 local Vehicle = {}
----@alias VEHICLE Vehicle
+---@class VEHICLE : Vehicle
+VEHICLE = Vehicle
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Returns the remaining boosting time left.
 ---

@@ -7,7 +7,8 @@
 ---[View wiki](https://wiki.facepunch.com/gmod/Weapon)
 ---@class Weapon : Entity
 local Weapon = {}
----@alias WEAPON Weapon
+---@class WEAPON : Weapon
+WEAPON = Weapon
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called when another entity fires an event to this entity.
 ---

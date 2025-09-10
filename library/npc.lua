@@ -44,6 +44,13 @@ function NPC:AlertSound() end
 ---@return boolean # `true` if any movement was performed.
 function NPC:AutoMovement(interval, target) end
 
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Become a ragdoll and remove the entity. Internally handles serverside/clientside ragdoll creation, momentum calculation, triggering ragdoll creation hooks / events and cloning entity's bone transforms to the created ragdoll.
+---
+---[View wiki](https://wiki.facepunch.com/gmod/NPC:BecomeRagdoll)
+---@param info CTakeDamageInfo Damage info passed from an onkilled event
+---@return Entity # The created serverside ragdoll, nil if failed or a clientside ragdoll created.
+function NPC:BecomeRagdoll(info) end
+
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Adds a capability to the NPC.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:CapabilitiesAdd)

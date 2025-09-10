@@ -841,9 +841,6 @@ EmitSoundInfo.Entity = nil
 ---@type Vector
 EmitSoundInfo.Pos = nil
 
----@class ENT : ENTITY
-ENT = {}
-
 ---The base entity to derive from. This **must** be a valid Lua entity
 ---@type string
 ENT.Base = nil
@@ -2791,9 +2788,6 @@ SurfacePropertyData.stepRightSound = nil
 ---Unused sound.
 ---@type string
 SurfacePropertyData.strainSound = nil
-
----@class SWEP : WEAPON
-SWEP = {}
 
 ---Entity class name of the SWEP (file or folder name of your SWEP). This is
 ---             set automatically

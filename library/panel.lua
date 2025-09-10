@@ -53,7 +53,8 @@
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel)
 ---@class Panel
 local Panel = {}
----@alias PANEL Panel
+---@class PANEL : Panel
+PANEL = Panel
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Adds the specified object to the panel.
 ---
