@@ -2086,13 +2086,17 @@ function Player:SimulateGravGunPickup(ent, lightning) end
 ---[View wiki](https://wiki.facepunch.com/gmod/PLAYER:Spawn)
 function PLAYER:Spawn() end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Starts spectate mode for given player. This will also affect the players movetype in some cases.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) **WARNING**: The player must be respawned, otherwise they will be able to walk through doors and become invincible.
+---
+--- Starts spectate mode for given player. This will also affect the players movetype in some cases.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:Spectate)
 ---@param mode number Spectate mode, see Enums/OBS_MODE.
 function Player:Spectate(mode) end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Makes the player spectate the entity.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) **WARNING**: The player must be respawned, otherwise they will be able to walk through doors and become invincible.
+---
+--- Makes the player spectate the entity.
 ---
 --- To get the applied spectated entity, use [Player:GetObserverTarget](https://wiki.facepunch.com/gmod/Player:GetObserverTarget).
 ---
@@ -2296,7 +2300,9 @@ function Player:UniqueIDTable(key) end
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:UnLock)
 function Player:UnLock() end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Stops the player from spectating another entity.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) **WARNING**: The player must be respawned, otherwise they will be able to walk through doors and become invincible.
+---
+--- Stops the player from spectating another entity.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:UnSpectate)
 function Player:UnSpectate() end
