@@ -1,21 +1,20 @@
 --[[
-	--[[
-		LuaLS plugin for Garry's Mod
+	LuaLS plugin for Garry's Mod
 
-		Includes code from https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
-		Includes code from https://github.com/CFC-Servers/luals_gmod_include
+	Includes code from https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
+	Includes code from https://github.com/CFC-Servers/luals_gmod_include
 
-		This started as a project to combine both but ended up adding a bunch of new things and making a few fixes. It currently has:
+	This started as a project to combine both but ended up adding a bunch of new things and making a few fixes. It currently has:
 
-		- Include Paths resolution
-		- Scripted Class Detection (ENT, SWEP, EFFECT, TOOL) with automated class annotation and inheritance detection
-		- DEFINE_BASECLASS processing
-		- Derma Class automated annotation with inheritance detection
-		- NetworkVar getter/setter annotation with type support
-		- AccessorFunc getter/setter annotation with type support
-		- Various fixes with class + hook inheritence (e.g PANEL and Panel caused issues)
-		- config.lua to configure some stuff easily
-	--]]
+	- Include Paths resolution
+	- Scripted Class Detection (ENT, SWEP, EFFECT, TOOL) with automated class annotation and inheritance detection
+	- DEFINE_BASECLASS processing
+	- Derma Class automated annotation with inheritance detection
+	- NetworkVar getter/setter annotation with type support
+	- AccessorFunc getter/setter annotation with type support
+	- Various fixes with class + hook inheritence (e.g PANEL and Panel caused issues)
+	- config.lua to configure some stuff easily
+--]]
 
 local util = require("utility")
 local client = require("client")
@@ -257,7 +256,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 	local hasLocal = string.find(text, localPattern) ~= nil
 
 	local folderBase = findFolderBase(uri, global, class)
-	local baseIdent, baseString, baseStringEscaped
+	local baseIdent, baseString
 	if folderBase then
 		if folderBase.kind == "ident" then
 			baseIdent = folderBase.value
@@ -265,8 +264,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 			baseString = folderBase.value
 		end
 	else
-		baseIdent = text:match(global .. "%.%s*Base%s*=%s*([%a_][%w_%.]*)")
-		baseStringEscaped = text:match(global .. "%.%s*Base%s*=%s*([%a_][%w_%.]*)")
+		baseString = text:match(global .. "%.Base%s*=%s[\"\']([%w_]*)[\"\']")
 	end
 
 	local parent = global
@@ -366,16 +364,56 @@ local function processDefineBaseclass(text)
 	local diffs = {}
 	local idx = 1
 	while true do
-		local s, e = string.find(text, "DEFINE_BASECLASS", idx, true)
+		local s, e, paren = text:find("DEFINE_BASECLASS%s*(%b())", idx)
 		if not s then break end
 		diffs[#diffs + 1] = {
 			start = s,
 			finish = e,
-			text = "local BaseClass = baseclass.Get",
+			text = "local BaseClass = baseclass.Get" .. paren .. "\n",
 		}
 		idx = e + 1
 	end
 	return diffs
+end
+
+local function insertPos(d)
+	return d.start or ((d.finish or 0) + 1)
+end
+
+local function resolveDiffConflicts(allDiffs)
+	local replacements = {}
+	for _, d in ipairs(allDiffs) do
+		if d.start and d.finish and d.finish >= d.start then
+			replacements[#replacements + 1] = { s = d.start, e = d.finish }
+		end
+	end
+	if #replacements == 0 then return end
+	for _, d in ipairs(allDiffs) do
+		if d.start and d.finish and d.finish < d.start then
+			local p = d.start
+			for i = 1, #replacements do
+				local r = replacements[i]
+				if p >= r.s and p <= r.e then
+					d.start = r.e + 1
+					d.finish = r.e
+					break
+				end
+			end
+		end
+	end
+end
+
+local function collectAccessorLines(text, target, cls, config, rs, re)
+	local collected = {}
+	local acc = AccessorProcessor.processAccessorFuncsForTarget(text, target, nil, cls, config, rs, re)
+	for _, ad in ipairs(acc or {}) do
+		if ad.text and #ad.text > 0 then
+			for line in ad.text:gmatch("[^\n]+") do
+				collected[#collected + 1] = line
+			end
+		end
+	end
+	return collected
 end
 
 ---@param uri string # File URI
@@ -386,6 +424,11 @@ function OnSetText(uri, text)
 		---@type PluginDiff[]
 		local diffs = {}
 		local config = ConfigManager.getConfig()
+
+		-- Skip meta files
+		if type(text) == "string" and text:match("^%-%-%-@meta") then
+			return nil
+		end
 
 		-- Handle scripted class (ENT/SWEP/EFFECT/TOOL) detection and localization
 		local global, class = GetScopedClass(uri)
@@ -406,9 +449,6 @@ function OnSetText(uri, text)
 		local dermaDiffs = DermaProcessor.processDermaRegistrations(text, config)
 
 		do
-			local function insertPos(d)
-				return d.start or ((d.finish or 0) + 1)
-			end
 			local sorted = {}
 			for i = 1, #dermaDiffs do sorted[i] = dermaDiffs[i] end
 			table.sort(sorted, function(a, b) return insertPos(a) < insertPos(b) end)
@@ -435,30 +475,26 @@ function OnSetText(uri, text)
 						local tbl = nextLine:match("^%s*local%s+([%a_][%w_]*)%s*=") or
 							nextLine:match("^%s*([%a_][%w_]*)%s*=")
 
-						local function collectAccessorLines(target)
-							local collected = {}
-							local acc = AccessorProcessor.processAccessorFuncsForTarget(text, target, nil, cls, config,
-								rs, re)
-							for _, ad in ipairs(acc or {}) do
-								if ad.text and #ad.text > 0 then
-									for line in ad.text:gmatch("[^\n]+") do
-										collected[#collected + 1] = line
-									end
-								end
-							end
-							return collected
-						end
 
 						local lines = {}
 						-- Prefer the parsed table variable; fall back to PANEL and self to handle typical Derma patterns
 						if tbl then
-							for _, l in ipairs(collectAccessorLines(tbl)) do lines[#lines + 1] = l end
+							for _, l in ipairs(collectAccessorLines(text, tbl, cls, config, rs, re)) do
+								lines[#lines + 1] =
+									l
+							end
 						end
 						if #lines == 0 then
-							for _, l in ipairs(collectAccessorLines("PANEL")) do lines[#lines + 1] = l end
+							for _, l in ipairs(collectAccessorLines(text, "PANEL", cls, config, rs, re)) do
+								lines[#lines + 1] =
+									l
+							end
 						end
 						if #lines == 0 then
-							for _, l in ipairs(collectAccessorLines("self")) do lines[#lines + 1] = l end
+							for _, l in ipairs(collectAccessorLines(text, "self", cls, config, rs, re)) do
+								lines[#lines + 1] =
+									l
+							end
 						end
 
 						if #lines > 0 then
@@ -522,6 +558,10 @@ function OnSetText(uri, text)
 				for _, diff in ipairs(networkVarDiffs) do diffs[#diffs + 1] = diff end
 			end
 		end
+
+		-- Resolve overlapping diffs: prevent insertions from targeting the same span as replacements
+
+		resolveDiffConflicts(diffs)
 
 		-- Apply diffs from bottom to top to avoid offset shifts when inserting/replacing
 		if #diffs > 1 then

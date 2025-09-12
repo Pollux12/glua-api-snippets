@@ -3111,6 +3111,7 @@ function Entity:ManipulateBonePosition(boneID, pos, networking) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets custom bone scale.
 --- This does not scale procedural bones.
+--- **NOTE**: This silently fails when given a Vector with nan values, hiding the vertices associated with the bone. See example below.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:ManipulateBoneScale)
 ---@param boneID number Index of the bone you want to manipulate

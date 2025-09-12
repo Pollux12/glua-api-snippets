@@ -1002,8 +1002,9 @@ function _G.EyeVector() end
 --- Custom meta tables should be registered via [Global.RegisterMetaTable](https://wiki.facepunch.com/gmod/Global.RegisterMetaTable).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.FindMetaTable)
----@param metaName string The object type to retrieve the meta table of.
----@return table|nil # The corresponding meta table or `nil` if it doesn't exist.
+---@generic T : table
+---@param metaName `T` The object type to retrieve the meta table of.
+---@return T|nil # The corresponding meta table or `nil` if it doesn't exist.
 function _G.FindMetaTable(metaName) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Returns the tool-tip text and tool-tip-panel (if any) of the given panel as well as itself
